@@ -20,6 +20,8 @@ type object struct {
 	Size int64
 	// Type is the type of the object being held.
 	Type string
+	// object is the blob object being handled, if any.
+	object gitobj.Object
 }
 
 // ObjectScanner is a scanner type that scans for Git objects reference-able in
@@ -68,6 +70,11 @@ func NewObjectScannerFrom(db *gitobj.ObjectDatabase) *ObjectScanner {
 // Scan() returns whether the scan was successful, or in other words, whether or
 // not the scanner can continue to progress.
 func (s *ObjectScanner) Scan(oid string) bool {
+	if err := s.reset(); err != nil {
+		s.err = err
+		return false
+	}
+
 	obj, err := s.scan(oid)
 	s.object = obj
 
@@ -87,6 +94,8 @@ func (s *ObjectScanner) Close() error {
 	if s == nil {
 		return nil
 	}
+
+	s.reset()
 
 	return nil
 }
@@ -116,6 +125,18 @@ func (s *ObjectScanner) Type() string {
 // operation.
 func (s *ObjectScanner) Err() error { return s.err }
 
+func (s *ObjectScanner) reset() error {
+	if s.object != nil && s.object.Type == "blob" {
+		blob := s.object.object.(*gitobj.Blob)
+		if err := blob.Close(); err != nil {
+			return err
+		}
+	}
+
+	s.object, s.err = nil, nil
+	return nil
+}
+
 type missingErr struct {
 	oid string
 }
@@ -139,6 +160,7 @@ func (s *ObjectScanner) scan(oid string) (*object, error) {
 		obj      gitobj.Object
 		size     int64
 		contents io.Reader
+		blob     *gitobj.Blob
 	)
 
 	obj, err := s.gitobj.Object(mustDecode(oid))
@@ -152,7 +174,7 @@ func (s *ObjectScanner) scan(oid string) (*object, error) {
 	// Currently, we're only interested in the size and contents of blobs,
 	// and gitobj only exposes the size easily for us for blobs anyway.
 	if obj.Type() == gitobj.BlobObjectType {
-		blob := obj.(*gitobj.Blob)
+		blob = obj.(*gitobj.Blob)
 		size = blob.Size
 		contents = blob.Contents
 	}
@@ -162,5 +184,6 @@ func (s *ObjectScanner) scan(oid string) (*object, error) {
 		Oid:      oid,
 		Size:     size,
 		Type:     obj.Type().String(),
+		object:   obj,
 	}, nil
 }
