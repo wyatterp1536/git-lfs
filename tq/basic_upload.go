@@ -123,7 +123,7 @@ func (a *basicUploadAdapter) DoTransfer(ctx interface{}, t *Transfer, cb Progres
 			err = errors.Wrap(err, perr.Error())
 		}
 
-		if res.StatusCode == 429 {
+		if res != nil && res.StatusCode == 429 {
 			retLaterErr := errors.NewRetriableLaterError(err, res.Header["Retry-After"][0])
 			if retLaterErr != nil {
 				return retLaterErr

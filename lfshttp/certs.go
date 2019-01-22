@@ -106,7 +106,7 @@ func getClientCertForHost(c *Client, host string) *tls.Certificate {
 // RootCAs will be used if passed to TLSClientConfig.RootCAs
 func getRootCAsForHost(c *Client, host string) *x509.CertPool {
 	// don't init pool, want to return nil not empty if none found; init only on successful add cert
-	var pool *x509.CertPool
+	pool, _ := x509.SystemCertPool()
 
 	// gitconfig first
 	pool = appendRootCAsForHostFromGitconfig(c.osEnv, c.gitEnv, pool, host)
