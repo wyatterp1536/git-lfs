@@ -113,3 +113,26 @@ begin_test "fsck: outside git repository"
   grep "Not in a git repository" fsck.log
 )
 end_test
+
+begin_test "fsck in a subdirectory"
+(
+  set -e
+
+  reponame="fsck-subdir"
+  git init $reponame
+  cd $reponame
+
+  git lfs track *.dat
+  mkdir subdir
+  (
+    cd subdir &&
+    echo "test data" > a.dat &&
+    echo "test data 2" > b.dat
+  )
+  git add .gitattributes subdir/*.dat
+  git commit -m "first commit"
+
+  cd subdir
+  [ "Git LFS fsck OK" = "$(git lfs fsck)" ]
+)
+end_test

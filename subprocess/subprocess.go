@@ -52,6 +52,12 @@ func SimpleExec(name string, args ...string) (string, error) {
 	return Output(ExecCommand(name, args...))
 }
 
+func ExecCommandInDir(dir string, name string, arg ...string) *Cmd {
+	cmd := ExecCommand(name, arg...)
+	cmd.Dir = dir
+	return cmd
+}
+
 func Output(cmd *Cmd) (string, error) {
 	//start copied from Go 1.6 exec.go
 	captureErr := cmd.Stderr == nil

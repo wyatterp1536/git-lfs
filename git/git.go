@@ -153,6 +153,10 @@ func gitNoLFS(args ...string) *subprocess.Cmd {
 	return subprocess.ExecCommand("git", gitConfigNoLFS(args...)...)
 }
 
+func gitNoLFSInDir(dir string, args ...string) *subprocess.Cmd {
+	return subprocess.ExecCommandInDir(dir, "git", gitConfigNoLFS(args...)...)
+}
+
 func gitNoLFSSimple(args ...string) (string, error) {
 	return subprocess.SimpleExec("git", gitConfigNoLFS(args...)...)
 }
@@ -665,13 +669,28 @@ func GitCommonDir() (string, error) {
 		return GitDir()
 	}
 
-	cmd := gitNoLFS("rev-parse", "--git-common-dir")
+	// During the Git 2.13.0 release cycle, the output of "git rev-parse
+	// --git-common-dir" was fixed to be relative to the current directory;
+	// previously, it was broken outside of the repository root. If we have
+	// the old style, perform the check in the repository root instead. This
+	// will give us the same result, but at the cost of calling RootDir an
+	// additional time.
+	var err error
+	root := "."
+	if !IsGitVersionAtLeast("2.13.0") {
+		root, err = RootDir()
+		if err != nil {
+			return "", err
+		}
+	}
+	cmd := gitNoLFSInDir(root, "rev-parse", "--git-common-dir")
 	out, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("Failed to call git rev-parse --git-dir: %v %v", err, string(out))
 	}
 	path := strings.TrimSpace(string(out))
-	return canonicalizeDir(path)
+
+	return canonicalizeDir(filepath.Join(root, path))
 }
 
 // GetAllWorkTreeHEADs returns the refs that all worktrees are using as HEADs
