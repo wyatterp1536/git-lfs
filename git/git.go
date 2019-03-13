@@ -675,22 +675,28 @@ func GitCommonDir() (string, error) {
 	// the old style, perform the check in the repository root instead. This
 	// will give us the same result, but at the cost of calling RootDir an
 	// additional time.
+	var cmd *subprocess.Cmd
+	var root string
 	var err error
-	root := "."
-	if !IsGitVersionAtLeast("2.13.0") {
+	if IsGitVersionAtLeast("2.13.0") {
+		cmd = gitNoLFS("rev-parse", "--git-common-dir")
+	} else {
 		root, err = RootDir()
 		if err != nil {
 			return "", err
 		}
+		cmd = gitNoLFSInDir(root, "rev-parse", "--git-common-dir")
 	}
-	cmd := gitNoLFSInDir(root, "rev-parse", "--git-common-dir")
 	out, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("Failed to call git rev-parse --git-dir: %v %v", err, string(out))
 	}
 	path := strings.TrimSpace(string(out))
 
-	return canonicalizeDir(filepath.Join(root, path))
+	if root != "" {
+		path = filepath.Join(root, path)
+	}
+	return canonicalizeDir(path)
 }
 
 // GetAllWorkTreeHEADs returns the refs that all worktrees are using as HEADs
