@@ -150,14 +150,17 @@ func gitConfigNoLFS(args ...string) []string {
 
 // Invoke Git with disabled LFS filters
 func gitNoLFS(args ...string) *subprocess.Cmd {
+	subprocess.Trace("git", args...)
 	return subprocess.ExecCommand("git", gitConfigNoLFS(args...)...)
 }
 
 func gitNoLFSSimple(args ...string) (string, error) {
+	subprocess.Trace("git", args...)
 	return subprocess.SimpleExec("git", gitConfigNoLFS(args...)...)
 }
 
 func gitNoLFSBuffered(args ...string) (*subprocess.BufferedCmd, error) {
+	subprocess.Trace("git", args...)
 	return subprocess.BufferedExec("git", gitConfigNoLFS(args...)...)
 }
 
