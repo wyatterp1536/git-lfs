@@ -298,7 +298,7 @@ wait_for_file() {
   n=0
   wait_time=1
   while [ $n -lt 17 ]; do
-    if [ -s $filename ]; then
+    if [ -s "$filename" ]; then
       return 0
     fi
 
@@ -520,7 +520,7 @@ setup() {
   wait_for_file "$LFS_CLIENT_KEY_FILE"
   wait_for_file "$LFS_CLIENT_KEY_FILE_ENCRYPTED"
 
-  LFS_CLIENT_CERT_URL=`cat $LFS_CLIENT_CERT_URL_FILE`
+  LFS_CLIENT_CERT_URL=$(cat "$LFS_CLIENT_CERT_URL_FILE")
 
   # Set up the initial git config and osx keychain if applicable
   HOME="$TESTHOME"
@@ -528,7 +528,7 @@ setup() {
     mkdir "$HOME"
   fi
 
-  if [ ! -f $HOME/.gitconfig ]; then
+  if [ ! -f "$HOME/.gitconfig" ]; then
     git lfs install --skip-repo
     git config --global credential.usehttppath true
     git config --global credential.helper lfstest
