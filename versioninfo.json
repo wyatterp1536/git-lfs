@@ -15,5 +15,6 @@
 		"ProductName": "Git Large File Storage (LFS)",
 		"ProductVersion": "2.8.0"
 	},
-	"IconPath": "script/windows-installer/git-lfs-logo.ico"
+	"IconPath": "script/windows-installer/git-lfs-logo.ico",
+	"ManifestPatH": "script/windows-installer/git-lfs-manifest.xml"
 }
