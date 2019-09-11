@@ -246,14 +246,22 @@ begin_test "lock with .gitignore"
   rm -f a.txt && git checkout a.txt
   refute_file_writeable a.txt
 
+  chmod +w a.txt
+
   echo "*.txt" > .gitignore
   git add .gitignore
+  git rm --cached a.txt
   git commit -m ".gitignore: ignore 'a.txt'"
-  rm -f a.txt && git checkout a.txt
+  refute_file_writeable a.txt
+
+  chmod +w a.txt
+
+  printf "abc" > b.dat
+  git add b.dat
+  git commit -m 'Add b.dat'
   assert_file_writeable a.txt
 )
 end_test
-
 
 begin_test "lock with .gitignore and lfs.lockignoredfiles"
 (
@@ -272,10 +280,19 @@ begin_test "lock with .gitignore and lfs.lockignoredfiles"
   rm -f a.txt && git checkout a.txt
   refute_file_writeable a.txt
 
+  chmod +w a.txt
+
   echo "*.txt" > .gitignore
   git add .gitignore
+  git rm --cached a.txt
   git commit -m ".gitignore: ignore 'a.txt'"
-  rm -f a.txt && git checkout a.txt
   refute_file_writeable a.txt
+
+  chmod +w a.txt
+
+  printf "abc" > b.dat
+  git add b.dat
+  git commit -m 'Add b.dat'
+  assert_file_writeable a.txt
 )
 end_test
