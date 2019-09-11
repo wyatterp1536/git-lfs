@@ -18,6 +18,7 @@ import (
 
 	"github.com/git-lfs/git-lfs/errors"
 	"github.com/git-lfs/git-lfs/filepathfilter"
+	"github.com/git-lfs/git-lfs/subprocess"
 )
 
 // FileOrDirExists determines if a file/dir exists, returns IsDir() results too.
@@ -267,6 +268,37 @@ func FastWalkGitRepoAll(rootDir string, cb FastWalkCallback) {
 func fastWalkCallback(walker *fastWalker, cb FastWalkCallback) {
 	for file := range walker.ch {
 		cb(file.ParentDir, file.Info, file.Err)
+	}
+}
+
+// FastWalkFullGitRepo walks the full repository with all cached files included.
+func FastWalkFullGitRepo(rootDir string, cb FastWalkCallback) {
+	cmd := subprocess.ExecCommand("git",
+		"-c", "core.quotepath=false", // handle special chars in filenames
+		"ls-files",
+		"--full-name",
+		"--others", // include untracked files
+		"--cached", // include things which are staged but not committed right now
+		"--",       // no ambiguous patterns
+		rootDir,
+	)
+
+	outp, err := cmd.StdoutPipe()
+	if err != nil {
+		// We have to pass a os.FileInfo here, so pass one for the root
+		// directory, even if it's just to report the error.
+		fi, _ := os.Stat(rootDir)
+		cb(rootDir, fi, err)
+		return
+	}
+	cmd.Start()
+	scanner := bufio.NewScanner(outp)
+	for scanner.Scan() {
+		fullPath := filepath.Join(rootDir, scanner.Text())
+		dir := filepath.Dir(fullPath)
+
+		fi, err := os.Stat(fullPath)
+		cb(dir, fi, err)
 	}
 }
 

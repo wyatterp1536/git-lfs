@@ -172,7 +172,7 @@ func findAttributeFiles(workingDir, gitDir string) []attrFile {
 		paths = append(paths, attrFile{path: repoAttributes, readMacros: true})
 	}
 
-	tools.FastWalkGitRepo(workingDir, func(parentDir string, info os.FileInfo, err error) {
+	tools.FastWalkFullGitRepo(workingDir, func(parentDir string, info os.FileInfo, err error) {
 		if err != nil {
 			tracerx.Printf("Error finding .gitattributes: %v", err)
 			return

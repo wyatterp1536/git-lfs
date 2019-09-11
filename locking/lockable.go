@@ -123,7 +123,7 @@ func (c *Client) fixFileWriteFlags(absPath, workingDir string, lockable, unlocka
 		errs = append(errs, err)
 	}
 
-	recursor := tools.FastWalkGitRepo
+	recursor := tools.FastWalkFullGitRepo
 	if c.ModifyIgnoredFiles {
 		recursor = tools.FastWalkGitRepoAll
 	}
