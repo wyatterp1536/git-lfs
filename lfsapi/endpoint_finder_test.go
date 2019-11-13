@@ -316,7 +316,7 @@ func TestLocalPathEndpointAddsDotGitDir(t *testing.T) {
 		"remote.origin.url": "/local/path",
 	}))
 	e := finder.Endpoint("download", "")
-	assert.Equal(t, "file:///local/path/.git/info/lfs", e.Url)
+	assert.Equal(t, "file:///local/path/.git", e.Url)
 }
 
 func TestLocalPathEndpointPreservesDotGit(t *testing.T) {
@@ -324,7 +324,7 @@ func TestLocalPathEndpointPreservesDotGit(t *testing.T) {
 		"remote.origin.url": "/local/path.git",
 	}))
 	e := finder.Endpoint("download", "")
-	assert.Equal(t, "file:///local/path.git/info/lfs", e.Url)
+	assert.Equal(t, "file:///local/path.git", e.Url)
 }
 
 func TestAccessConfig(t *testing.T) {

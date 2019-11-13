@@ -175,7 +175,7 @@ func (e *endpointGitFinder) NewEndpointFromCloneURL(operation, rawurl string) lf
 		ep.Url = rawurl[0 : len(rawurl)-1]
 	}
 
-	if strings.HasPrefix(rawurl, "file://") {
+	if strings.HasPrefix(ep.Url, "file://") {
 		return ep
 	}
 
@@ -209,6 +209,9 @@ func (e *endpointGitFinder) NewEndpoint(operation, rawurl string) lfshttp.Endpoi
 	case "file":
 		return lfshttp.EndpointFromFileUrl(u)
 	case "":
+		if _, err := os.Stat(rawurl); err == nil {
+			return lfshttp.EndpointFromLocalPath(rawurl)
+		}
 		return lfshttp.EndpointFromBareSshUrl(u.String())
 	default:
 		if strings.HasPrefix(rawurl, u.Scheme+"::") {
