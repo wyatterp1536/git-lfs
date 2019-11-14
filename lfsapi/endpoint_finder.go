@@ -209,14 +209,25 @@ func (e *endpointGitFinder) NewEndpoint(operation, rawurl string) lfshttp.Endpoi
 	case "file":
 		return lfshttp.EndpointFromFileUrl(u)
 	case "":
+		fmt.Fprintf(os.Stderr, "dx: a: %s\n", rawurl)
 		if _, err := os.Stat(rawurl); err == nil {
+			fmt.Fprintf(os.Stderr, "dx: b: %s\n", rawurl)
 			return lfshttp.EndpointFromLocalPath(rawurl)
+		} else {
+			fmt.Fprintf(os.Stderr, "dx: c: %v\n", err)
 		}
 		return lfshttp.EndpointFromBareSshUrl(u.String())
 	default:
 		if strings.HasPrefix(rawurl, u.Scheme+"::") {
 			// Looks like a remote helper; just pass it through.
 			return lfshttp.Endpoint{Url: rawurl}
+		}
+		fmt.Fprintf(os.Stderr, "dx: d: %s\n", rawurl)
+		if _, err := os.Stat(rawurl); err == nil {
+			fmt.Fprintf(os.Stderr, "dx: e: %s\n", rawurl)
+			return lfshttp.EndpointFromLocalPath(rawurl)
+		} else {
+			fmt.Fprintf(os.Stderr, "dx: f: %v\n", err)
 		}
 		// We probably got here because the "scheme" that was parsed is
 		// a hostname (whether FQDN or single word) and the URL parser

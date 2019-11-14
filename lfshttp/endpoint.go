@@ -3,6 +3,7 @@ package lfshttp
 import (
 	"fmt"
 	"net/url"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -111,10 +112,15 @@ func EndpointFromLocalPath(path string) Endpoint {
 	if !strings.HasSuffix(path, ".git") {
 		path = fmt.Sprintf("%s/.git", path)
 	}
-	if abs, err := filepath.Abs(path); err != nil {
+	var slash string
+	if abs, err := filepath.Abs(path); err == nil {
+		if !strings.HasPrefix(abs, "/") {
+			slash = "/"
+		}
+		fmt.Fprintf(os.Stderr, "dx: g: file://%s%s: %s\n", slash, abs, path)
 		path = abs
 	}
-	return Endpoint{Url: fmt.Sprintf("file://%s", filepath.ToSlash(path))}
+	return Endpoint{Url: fmt.Sprintf("file://%s%s", slash, filepath.ToSlash(path))}
 }
 
 // Construct a new endpoint from a file URL

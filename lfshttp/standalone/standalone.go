@@ -73,6 +73,7 @@ func fileUrlFromRemote(cfg *config.Configuration, name string, direction string)
 			continue
 		}
 		remoteEndpoint := apiClient.Endpoints.Endpoint(direction, remote)
+		fmt.Fprintf(os.Stderr, "dx: h: %s\n", remoteEndpoint.Url)
 		if !strings.HasPrefix(remoteEndpoint.Url, "file://") {
 			return nil, nil
 		}
@@ -139,6 +140,7 @@ func fixUrlPath(path string) string {
 	if runtime.GOOS != "windows" {
 		return path
 	}
+	fmt.Fprintf(os.Stderr, "dx: i: %s\n", path)
 
 	// When parsing a file URL, Go produces a path starting with a slash. If
 	// it looks like there's a Windows drive letter at the beginning, strip
