@@ -3,6 +3,7 @@ package config
 import (
 	"strconv"
 	"strings"
+	"github.com/rubyist/tracerx"
 )
 
 // An Environment adds additional behavior to a Fetcher, such a type conversion,
@@ -58,24 +59,29 @@ func EnvironmentOf(f Fetcher) Environment {
 }
 
 func (e *environment) Get(key string) (val string, ok bool) {
+	tracerx.Printf("environment Get %q", key)
 	return e.Fetcher.Get(key)
 }
 
 func (e *environment) GetAll(key string) []string {
+	tracerx.Printf("environment GetAll %q", key)
 	return e.Fetcher.GetAll(key)
 }
 
 func (e *environment) Bool(key string, def bool) bool {
+	tracerx.Printf("environment Bool %q", key)
 	s, _ := e.Fetcher.Get(key)
 	return Bool(s, def)
 }
 
 func (e *environment) Int(key string, def int) int {
+	tracerx.Printf("environment Int %q", key)
 	s, _ := e.Fetcher.Get(key)
 	return Int(s, def)
 }
 
 func (e *environment) All() map[string][]string {
+	tracerx.Printf("environment All")
 	return e.Fetcher.All()
 }
 
