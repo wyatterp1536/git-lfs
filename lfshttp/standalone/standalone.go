@@ -101,37 +101,22 @@ func gitDirAtPath(path string) (string, error) {
 	}
 	env = env[:n]
 
-	curdir, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-
-	err = os.Chdir(path)
-	if err != nil {
-		return "", err
-	}
-
-	cmd := subprocess.ExecCommand("git", "rev-parse", "--git-dir")
+	cmd := subprocess.ExecCommand("git", "-C", path, "rev-parse", "--git-dir")
 	cmd.Cmd.Env = env
 	out, err := cmd.Output()
 	if err != nil {
 		return "", errors.Wrap(err, "failed to call git rev-parse --git-dir")
 	}
 
-	gitdir, err := tools.TranslateCygwinPath(strings.TrimRight(string(out), "\n"))
+	gitdir, err := tools.TranslateCygwinPathInDir(strings.TrimRight(string(out), "\n"), path)
 	if err != nil {
 		return "", errors.Wrap(err, "unable to translate path")
 	}
 
-	gitdir, err = filepath.Abs(gitdir)
-	if err != nil {
-		return "", errors.Wrap(err, "unable to canonicalize path")
+	if !filepath.IsAbs(gitdir) {
+		gitdir = filepath.Join(path, gitdir)
 	}
 
-	err = os.Chdir(curdir)
-	if err != nil {
-		return "", err
-	}
 	return filepath.EvalSymlinks(gitdir)
 }
 
