@@ -18,7 +18,7 @@ func Getwd() (dir string, err error) {
 	}
 
 	if isCygwin() {
-		dir, err = translateCygwinPath(dir)
+		dir, err = translateCygwinPath(dir, "")
 		if err != nil {
 			return "", errors.Wrap(err, "convert wd to cygwin")
 		}
@@ -27,10 +27,13 @@ func Getwd() (dir string, err error) {
 	return
 }
 
-func translateCygwinPath(path string) (string, error) {
+func translateCygwinPath(path, dir string) (string, error) {
 	cmd := subprocess.ExecCommand("cygpath", "-w", path)
 	buf := &bytes.Buffer{}
 	cmd.Stderr = buf
+	if len(dir) != 0 {
+		cmd.Dir = dir
+	}
 	out, err := cmd.Output()
 	output := strings.TrimSpace(string(out))
 	if err != nil {
@@ -45,10 +48,14 @@ func translateCygwinPath(path string) (string, error) {
 }
 
 func TranslateCygwinPath(path string) (string, error) {
+	return TranslateCygwinPathInDir(path, "")
+}
+
+func TranslateCygwinPathInDir(path, dir string) (string, error) {
 	if isCygwin() {
 		var err error
 
-		path, err = translateCygwinPath(path)
+		path, err = translateCygwinPath(path, dir)
 		if err != nil {
 			return "", err
 		}
