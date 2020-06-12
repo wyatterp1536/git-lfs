@@ -934,11 +934,11 @@ Git blobs to LFS objects. The most common use case will fix a git push rejected
 for having large blobs:
 
 ```
-$ git push origin master
+$ git push origin main
 # ...
 remote: error: file a.psd is 1.2 gb; this exceeds github's file size limit of 100.00 mb
 to github.com:ttaylorr/demo.git
- ! [remote rejected] master -> master (pre-receive hook declined)
+ ! [remote rejected] main -> main (pre-receive hook declined)
 error: failed to push some refs to 'git@github.com:ttaylorr/demo.git'
 
 $ git lfs migrate info
@@ -947,14 +947,14 @@ $ git lfs migrate info
 $ git lfs migrate import --include="*.psd"
 migrate: Sorting commits: ..., done
 migrate: Rewriting commits: 100% (810/810), done
-  master        f18bb746d44e8ea5065fc779bb1acdf3cdae7ed8 -> 35b0fe0a7bf3ae6952ec9584895a7fb6ebcd498b
+  main          f18bb746d44e8ea5065fc779bb1acdf3cdae7ed8 -> 35b0fe0a7bf3ae6952ec9584895a7fb6ebcd498b
 migrate: Updating refs: ..., done
 
 $ git push origin
 Git LFS: (1 of 1 files) 1.2 GB / 1.2 GB
 # ...
 To github.com:ttaylorr/demo.git
- * [new branch]      master -> master
+ * [new branch]      main -> main
 ```
 
 The `migrate` command has detailed options described in the `git-lfs-migrate(1)`
@@ -1371,7 +1371,7 @@ requests run tests on macOS, Linux, and Windows.
 * Enhanced upload/download of LFS content: #1265 #1279 #1297 #1303 #1367 (@sinbad)
   * Resumable downloads using HTTP range headers
   * Resumable uploads using [tus.io protocol](http://tus.io)
-  * Pluggable [custom transfer adapters](https://github.com/git-lfs/git-lfs/blob/master/docs/custom-transfers.md)
+  * Pluggable [custom transfer adapters](https://github.com/git-lfs/git-lfs/blob/main/docs/custom-transfers.md)
 * In git 2.9+, run "git lfs pull" in submodules after "git lfs clone" #1373 (@sinbad)
 * cmd,doc,test: teach `git lfs track --{no-touch,verbose,dry-run}` #1344 (@ttaylorr)
 * ⏳ Retry transfers with expired actions #1350 (@ttaylorr)
