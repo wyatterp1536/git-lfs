@@ -12,14 +12,25 @@ if [[ $UNAME == MINGW* || $UNAME == MSYS* || $UNAME == CYGWIN* ]]; then
   export GIT_LFS_NO_TEST_COUNT=1
   export GIT_LFS_LOCK_ACQUIRE_DISABLED=1
 fi
+echo "dx: a"
+git config -l
+echo "dx: a1"
+git status -s
+echo "dx: b"
 
 # Set GOPATH if it isn't already set.
 eval "$(go env | grep GOPATH)"
 go get golang.org/x/tools/cmd/goimports
+echo "dx: c"
+git status -s
+echo "dx: d"
 
 GOIMPORTS="$GOPATH/bin/goimports"
 
 make GOIMPORTS="$GOIMPORTS" && make GOIMPORTS="$GOIMPORTS" test
+echo "dx: e"
+git status -s
+echo "dx: f"
 
 # re-run test to ensure GIT_TRACE output doesn't leak into the git package
 GIT_TRACE=1 make GOIMPORTS="$GOIMPORTS" PKGS=git test
@@ -37,6 +48,10 @@ pushd t >/dev/null
   VERBOSE_LOGS=1 make X="$X" PROVE="$PROVE" PROVE_EXTRA_ARGS="$PROVE_EXTRA_ARGS"
 popd >/dev/null
 
+echo "dx: g"
+git status -s
+echo "dx: h"
+
 echo "Looking for trailing whitespace..."
 if git grep -lE '[[:space:]]+$' | \
    grep -vE '(^vendor/|\.git/(objects/|index)|\.bat$)'
@@ -47,9 +62,17 @@ fi
 echo "Formatting files..."
 # Building and installing goimports and goversioninfo will have modified go.mod
 # and go.sum, so reset the branch before formatting.
+echo "dx: i"
+git status -s
+echo "dx: j"
 git reset --hard
+echo "dx: k"
+git status -s
+echo "dx: l"
 make -W lint fmt GOIMPORTS="$GOIMPORTS"
 
 echo "Looking for files that are not formatted correctly..."
+echo "dx: m"
 git status -s
+echo "dx: n"
 [ -z "$(git status --porcelain)" ]
