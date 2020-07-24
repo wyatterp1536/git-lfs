@@ -48,7 +48,7 @@ echo "Formatting files..."
 # Building and installing goimports and goversioninfo will have modified go.mod
 # and go.sum, so reset the branch before formatting.
 git reset --hard
-make fmt GOIMPORTS="$GOIMPORTS"
+make -W lint fmt GOIMPORTS="$GOIMPORTS"
 
 echo "Looking for files that are not formatted correctly..."
 git status -s
