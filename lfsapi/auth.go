@@ -67,7 +67,7 @@ func (c *Client) doWithAuth(remote string, access creds.Access, req *http.Reques
 	res, err := c.doWithCreds(req, credWrapper, access, via)
 	if err != nil {
 		if errors.IsAuthError(err) {
-			newAccess := access.Upgrade(getAuthAccess(res))
+			newAccess := access.Upgrade(c.getAuthAccess(res, access.URL()))
 			if newAccess.Mode() != access.Mode() {
 				c.Endpoints.SetAccess(newAccess)
 			}
@@ -314,7 +314,10 @@ var (
 	authenticateHeaders = []string{"Lfs-Authenticate", "Www-Authenticate"}
 )
 
-func getAuthAccess(res *http.Response) creds.AccessMode {
+func (c *Client) getAuthAccess(res *http.Response, url string) creds.AccessMode {
+	access := c.Endpoints.AccessFor(url)
+	mode := access.Mode()
+	available := make(map[creds.AccessMode]struct{})
 	for _, headerName := range authenticateHeaders {
 		for _, auth := range res.Header[headerName] {
 			pieces := strings.SplitN(strings.ToLower(auth), " ", 2)
@@ -322,11 +325,20 @@ func getAuthAccess(res *http.Response) creds.AccessMode {
 				continue
 			}
 
-			switch creds.AccessMode(pieces[0]) {
-			case creds.NegotiateAccess, creds.NTLMAccess:
-				return creds.AccessMode(pieces[0])
-			}
+			available[creds.AccessMode(pieces[0])] = struct{}{}
 		}
+	}
+
+	if _, ok := available[mode]; ok && mode != creds.NoneAccess {
+		return mode
+	}
+
+	if _, ok := available[creds.NegotiateAccess]; ok {
+		return creds.NegotiateAccess
+	}
+
+	if _, ok := available[creds.NTLMAccess]; ok {
+		return creds.NTLMAccess
 	}
 
 	return creds.BasicAccess

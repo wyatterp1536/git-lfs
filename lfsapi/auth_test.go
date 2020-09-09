@@ -38,12 +38,14 @@ func TestAuthenticateHeaderAccess(t *testing.T) {
 		"negotiate 1 2 3": creds.NegotiateAccess,
 	}
 
+	client, _ := NewClient(lfshttp.NewContext(nil, nil, nil))
+
 	for _, key := range authenticateHeaders {
 		for value, expected := range tests {
 			res := &http.Response{Header: make(http.Header)}
 			res.Header.Set(key, value)
 			t.Logf("%s: %s", key, value)
-			assert.Equal(t, expected, getAuthAccess(res))
+			assert.Equal(t, expected, client.getAuthAccess(res, ""))
 		}
 	}
 }
