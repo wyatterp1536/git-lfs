@@ -4,6 +4,10 @@ set -e
 # Strip out CI environment variables which cause tests to fail.
 unset $(env | grep -E '^GIT(HUB)?_' | grep -v '^GIT_DEFAULT_HASH=' | sed -e 's/=.*$//')
 
+CIBUILD_TEMPDIR=$(mktemp -d -t "git-lfs_TEMP.XXXXXX")
+
+printf "%s\n" "-j9" > "$CIBUILD_TEMPDIR/.proverc"
+
 UNAME=$(uname -s)
 X=""
 if [[ $UNAME == MINGW* || $UNAME == MSYS* || $UNAME == CYGWIN* ]]; then
@@ -33,7 +37,7 @@ pushd t >/dev/null
   if [ "$WINDOWS" ]; then
     export PATH="/c/Strawberry/perl/bin:.:$PATH"
     PROVE="prove.bat"
-    PROVE_EXTRA_ARGS="$PROVE_EXTRA_ARGS --exec bash"
+    PROVE_EXTRA_ARGS="$PROVE_EXTRA_ARGS --rc $CIBUILD_TEMPDIR/.proverc --exec bash"
   fi
 
   VERBOSE_LOGS=1 make X="$X" clean
