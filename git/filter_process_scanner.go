@@ -187,6 +187,8 @@ func (o *FilterProcessScanner) readRequest() (*Request, error) {
 		v := strings.SplitN(pair, "=", 2)
 		if len(v) > 1 {
 			req.Header[v[0]] = v[1]
+		} else {
+			tracerx.Printf("found unknown request: %q", pair)
 		}
 	}
 
