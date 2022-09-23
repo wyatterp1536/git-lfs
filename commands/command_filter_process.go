@@ -180,7 +180,7 @@ func filterCommand(cmd *cobra.Command, args []string) {
 			}
 			err = s.WriteList(paths)
 		default:
-			ExitWithError(errors.New(tr.Tr.Get("unknown command %q", req.Header["command"])))
+			ExitWithError(errors.New(tr.Tr.Get("unknown command %q (%v)", req.Header["command"], req)))
 		}
 
 		if errors.IsNotAPointerError(err) {
