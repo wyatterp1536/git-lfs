@@ -149,14 +149,11 @@ func migrateImportCommand(cmd *cobra.Command, args []string) {
 	migrate(args, rewriter, l, &githistory.RewriteOptions{
 		Verbose:           migrateVerbose,
 		ObjectMapFilePath: objectMapFilePath,
+		Above:             above,
 		BlobFn: func(path string, b *gitobj.Blob) (*gitobj.Blob, error) {
 			if filepath.Base(path) == ".gitattributes" {
 				return b, nil
 			}
-			if (above > 0) && (uint64(b.Size) < above) {
-				return b, nil
-			}
-
 			if migrateFixup {
 				var ok bool
 				attrs := fixups.Applied(path)

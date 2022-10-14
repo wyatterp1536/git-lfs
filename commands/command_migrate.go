@@ -119,6 +119,8 @@ func rewriteOptions(args []string, opts *githistory.RewriteOptions, l *tasklog.L
 		Verbose:           opts.Verbose,
 		ObjectMapFilePath: opts.ObjectMapFilePath,
 
+		Above: opts.Above,
+
 		BlobFn:            opts.BlobFn,
 		TreePreCallbackFn: opts.TreePreCallbackFn,
 		TreeCallbackFn:    opts.TreeCallbackFn,

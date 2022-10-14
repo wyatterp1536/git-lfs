@@ -56,6 +56,10 @@ type RewriteOptions struct {
 	// Verbose mode prints migrated objects.
 	Verbose bool
 
+	// Above indicates whether to process only objects above a certain
+	// number of bytes.
+	Above uint64
+
 	// ObjectMapFilePath is the path to the map of old sha1 to new sha1
 	// commits
 	ObjectMapFilePath string
@@ -244,7 +248,7 @@ func (r *Rewriter) Rewrite(opt *RewriteOptions) ([]byte, error) {
 		}
 
 		// Rewrite the tree given at that commit.
-		rewrittenTree, err := r.rewriteTree(oid, original.TreeID, "", opt.blobFn(), opt.treePreFn(), opt.treeFn(), vPerc)
+		rewrittenTree, err := r.rewriteTree(oid, original.TreeID, "", opt.blobFn(), opt.treePreFn(), opt.treeFn(), opt.Above, vPerc)
 		if err != nil {
 			return nil, err
 		}
@@ -353,7 +357,7 @@ func (r *Rewriter) Rewrite(opt *RewriteOptions) ([]byte, error) {
 // unable to be rewritten.
 func (r *Rewriter) rewriteTree(commitOID []byte, treeOID []byte, path string,
 	fn BlobRewriteFn, tpfn TreePreCallbackFn, tfn TreeCallbackFn,
-	perc *tasklog.PercentageTask) ([]byte, error) {
+	above uint64, perc *tasklog.PercentageTask) ([]byte, error) {
 
 	tree, err := r.db.Tree(treeOID)
 	if err != nil {
@@ -384,6 +388,17 @@ func (r *Rewriter) rewriteTree(commitOID []byte, treeOID []byte, path string,
 			continue
 		}
 
+		if above > 0 && entry.Type() == gitobj.BlobObjectType {
+			_, size, err := r.db.ObjectHeader(entry.Oid)
+			if err != nil {
+				return nil, err
+			}
+			if uint64(size) < above {
+				entries = append(entries, copyEntry(entry))
+				continue
+			}
+		}
+
 		if cached := r.uncacheEntry(fullpath, entry); cached != nil {
 			entries = append(entries, copyEntryMode(cached,
 				entry.Filemode))
@@ -396,7 +411,7 @@ func (r *Rewriter) rewriteTree(commitOID []byte, treeOID []byte, path string,
 		case gitobj.BlobObjectType:
 			oid, err = r.rewriteBlob(commitOID, entry.Oid, fullpath, fn, perc)
 		case gitobj.TreeObjectType:
-			oid, err = r.rewriteTree(commitOID, entry.Oid, fullpath, fn, tpfn, tfn, perc)
+			oid, err = r.rewriteTree(commitOID, entry.Oid, fullpath, fn, tpfn, tfn, above, perc)
 		default:
 			oid = entry.Oid
 

@@ -30,4 +30,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
+replace github.com/git-lfs/gitobj/v2 => /home/bk2204/checkouts/gitobj
+
 go 1.11
