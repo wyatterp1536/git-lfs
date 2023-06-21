@@ -390,6 +390,23 @@ func (c *Client) configureProtocols(u *url.URL, transport *http.Transport) error
 	return nil
 }
 
+func dumpProxyInfo(ctx context.Context, proxyURL *url.URL, connectReq *http.Request, connectRes *http.Response) error {
+	tracerx.Printf("proxy URL: %s")
+	tracerx.Printf("request headers")
+	for k, v := range connectReq.Header {
+		for _, value := range v {
+			tracerx.Printf("header %s: %s", k, value)
+		}
+	}
+	tracerx.Printf("response: %s", connectRes.Status)
+	for k, v := range connectRes.Header {
+		for _, value := range v {
+			tracerx.Printf("header %s: %s", k, value)
+		}
+	}
+	return nil
+}
+
 func (c *Client) Transport(u *url.URL, access creds.AccessMode) (http.RoundTripper, error) {
 	host := u.Host
 
@@ -421,9 +438,10 @@ func (c *Client) Transport(u *url.URL, access creds.AccessMode) (http.RoundTripp
 		tlstime = 30
 	}
 	tr := &http.Transport{
-		Proxy:               proxyFromClient(c),
-		TLSHandshakeTimeout: time.Duration(tlstime) * time.Second,
-		MaxIdleConnsPerHost: concurrentTransfers,
+		Proxy:                  proxyFromClient(c),
+		OnProxyConnectResponse: dumpProxyInfo,
+		TLSHandshakeTimeout:    time.Duration(tlstime) * time.Second,
+		MaxIdleConnsPerHost:    concurrentTransfers,
 	}
 
 	activityTimeout := 30
